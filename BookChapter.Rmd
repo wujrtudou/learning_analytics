@@ -25,15 +25,68 @@ table(data$certified,data$gender)
 table(data$certified,data$explored)
 table(data$certified,data$final_cc_cname_DI)
 library(ggplot2)
-# Faceted boxplot for `certified` vs all numerical variables
-library(reshape2)
+library(patchwork)
+# Ensure 'course_id' is a factor
+data$course_id <- as.factor(data$course_id)
+# Rename specific course names
+levels(data$course_id)[levels(data$course_id) == "HarvardX/PH207x/2012_Fall"] <- "c_id1"
+levels(data$course_id)[levels(data$course_id) == "HarvardX/PH278x/2013_Spring"] <- "c_id2"
 
-data_long <- melt(data, id.vars = "certified", measure.vars = c("nevents", "ndays_act", "nplay_video", "nchapters", "nforum_posts"))
+plot1 <- ggplot(data, aes(x = course_id, fill = factor(certified))) +
+  geom_bar(position = "fill") +
+  labs(y = "proportion", title = "course_id", fill = "certified") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
 
-ggplot(data_long, aes(x = certified, y = value, fill = certified)) +
+# Bar plot for `certified` vs `gender`
+plot2 <- ggplot(data, aes(x = gender, fill = factor(certified))) +
+  geom_bar(position = "fill") +
+  labs(y = "proportion", title = "gender", fill = "certified") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Bar plot for `certified` vs `explored`
+plot3 <- ggplot(data, aes(x = explored, fill = factor(certified))) +
+  geom_bar(position = "fill") +
+  labs(y = "proportion", title = "explored", fill = "certified") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+# Combine the plots in a row
+combined_plot <- plot1 | plot2 | plot3
+
+# Display the combined plot
+combined_plot + plot_layout(guides = 'collect')
+
+# Boxplot for `certified` vs `nevents`
+# Create individual plots with centered titles
+plot1 <- ggplot(data, aes(x = factor(certified), y = nevents, fill = factor(certified))) +
   geom_boxplot() +
-  facet_wrap(~ variable, scales = "free_y") +
-  labs(title = "Certified vs Various Numerical Variables")
+  labs(title = "nevents", x = "certified", fill = "certified") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot2 <- ggplot(data, aes(x = factor(certified), y = ndays_act, fill = factor(certified))) +
+  geom_boxplot() +
+  labs(title = "ndays_act", x = "certified", fill = "certified") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot3 <- ggplot(data, aes(x = factor(certified), y = nchapters, fill = factor(certified))) +
+  geom_boxplot() +
+  labs(title = "nchapters", x = "certified", fill = "certified") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot4 <- ggplot(data, aes(x = factor(certified), y = nplay_video, fill = factor(certified))) +
+  geom_boxplot() +
+  labs(title = "nplay_video", x = "certified", fill = "certified") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot5 <- ggplot(data, aes(x = factor(certified), y = nforum_posts, fill = factor(certified))) +
+  geom_boxplot() +
+  labs(title = "nforum_posts", x = "certified", fill = "certified") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+## Combine the plots with plot5 on the left side of row 3
+combined_plot <- (plot1 | plot2) / (plot3 | plot4) / (plot5 | plot_spacer())
+combined_plot + plot_layout(guides = 'collect', heights = c(1, 1, 1))
 
 ```
 
